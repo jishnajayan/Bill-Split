@@ -1,0 +1,25 @@
+{
+  "name": "bill-split",
+  "version": "1.0.0",
+  "description": "Web App to help friends split restaurant bills",
+  "main": "app.js",
+  "scripts": {
+    "start": "nodemon app.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jishnajayan/Bill-Split.git"
+  },
+  "author": "Jishna Thadichi",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/jishnajayan/Bill-Split/issues"
+  },
+  "homepage": "https://github.com/jishnajayan/Bill-Split#readme",
+  "devDependencies": {
+    "nodemon": "^3.1.9"
+  },
+  "dependencies": {
+    "express": "^4.21.2"
+  }
+}
