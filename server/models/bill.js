@@ -5,7 +5,7 @@ const BillSchema = new mongoose.Schema({
     restaurantName: String,
     totalAmount: Number,
     createdAt: Date,
-    resolved: Boolean,
+    resolved: [Boolean, false],
     items: [{ itemId: mongoose.Schema.Types.ObjectId, name: String, price: Number, claimedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }] }],
     participants: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
 });

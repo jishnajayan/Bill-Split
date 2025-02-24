@@ -1,6 +1,9 @@
 const { StatusCodes } = require('http-status-codes')
 
 const User = require('../models/user')
+const Bill = require('../models/bill');
+
+// User and friend related functions.
 
 getUser = async (req, res) => {
     const user = await User.findById(req.params.userId, ["name", "email"])
@@ -27,6 +30,24 @@ deleteUsersFriends = async (req, res) => {
     res.sendStatus(StatusCodes.NO_CONTENT);
 }
 
+// User's Bill related functions.
 
+getIncomingBills = async (req, res) => {
+    let filter = { participants: req.params.userId, 'items.claimedBy': { $ne: req.params.userId } };
+    if (req.query.resolved) {
+        filter.resolved = req.query.resolved
+    }
+    const bills = await Bill.find(filter);
+    return res.status(StatusCodes.OK).json(bills);
+}
 
-module.exports = { getUser, getUsersFriends, postUsersFriends, deleteUsersFriends };
+getOutgoingBills = async (req, res) => {
+    let filter = { paymentUserId: req.params.userId, };
+    if (req.query.resolved) {
+        filter.resolved = req.query.resolved
+    }
+    const bills = await Bill.find(filter);
+    return res.status(StatusCodes.OK).json(bills);
+}
+
+module.exports = { getUser, getUsersFriends, postUsersFriends, deleteUsersFriends, getOutgoingBills, getIncomingBills };

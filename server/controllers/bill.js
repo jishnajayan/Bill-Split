@@ -6,7 +6,7 @@ const Bill = require('../models/bill');
 getBill = async (req, res) => {
     const bill = await Bill.findById(req.params.billId);
     if (!bill) return res.status(StatusCodes.BAD_REQUEST).json({ msg: 'Bill not found' });
-    return res.status(StatusCodes.ACCEPTED).json(bill);
+    return res.status(StatusCodes.OK).json(bill);
 }
 
 postBill = async (req, res) => {
