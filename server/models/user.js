@@ -24,7 +24,8 @@ const UserSchema = mongoose.Schema({
         type: String,
         required: [true, 'Please enter a strong password (min 10 chars)'],
         minLength: 10
-    }
+    },
+    friends: [{ friendUserId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, friendUsername: String }],
 });
 
 UserSchema.pre('save', async function () {

@@ -7,15 +7,13 @@ const path = require('path');
 const app = express();
 
 const authRouter = require('./routes/auth');
+const userRouter = require('./routes/user');
 
 app.use(express.static(path.join(__dirname, '../client/build')));
 app.use(express.json());
 
 app.use('/api/v1/auth', authRouter);
-
-app.get('/*', (req, res) => {
-    res.sendFile(path.join(__dirname, '../client/build', 'index.html'));
-});
+app.use('/api/v1/users', userRouter);
 
 // TODO: Add more sophisticated error handling. For now this is okay.
 app.use((err, req, res, next) => {
