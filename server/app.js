@@ -3,6 +3,7 @@ require('express-async-errors');
 const express = require('express');
 const connectDB = require('./db/connect');
 const path = require('path');
+const cookieParser = require('cookie-parser');
 
 const app = express();
 
@@ -12,6 +13,7 @@ const billRouter = require('./routes/bill');
 
 app.use(express.static(path.join(__dirname, '../client/build')));
 app.use(express.json());
+app.use(cookieParser());
 
 app.use('/api/v1/auth', authRouter);
 app.use('/api/v1/users', userRouter);

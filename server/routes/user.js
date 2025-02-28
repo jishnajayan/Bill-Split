@@ -2,11 +2,13 @@ const express = require('express')
 const router = express.Router()
 
 const { getUser, getUsersFriends, postUsersFriends, deleteUsersFriends, getIncomingBills, getOutgoingBills } = require('../controllers/user');
+const { authenticateUser, authorizeUser } = require('../middleware/auth');
 
-router.route('/:userId').get(getUser);
-router.route('/:userId/friends').get(getUsersFriends).post(postUsersFriends);
-router.route('/:userId/friends/:friendUserId').delete(deleteUsersFriends);
-router.route('/:userId/bills/incoming').get(getIncomingBills);
-router.route('/:userId/bills/outgoing').get(getOutgoingBills);
+// Apply authentication and authorization to all user routes
+router.route('/:userId').get(authenticateUser, authorizeUser, getUser);
+router.route('/:userId/friends').get(authenticateUser, authorizeUser, getUsersFriends).post(authenticateUser, authorizeUser, postUsersFriends);
+router.route('/:userId/friends/:friendUserId').delete(authenticateUser, authorizeUser, deleteUsersFriends);
+router.route('/:userId/bills/incoming').get(authenticateUser, authorizeUser, getIncomingBills);
+router.route('/:userId/bills/outgoing').get(authenticateUser, authorizeUser, getOutgoingBills);
 
 module.exports = router;

@@ -5,12 +5,24 @@ const Bill = require('../models/bill');
 
 getBill = async (req, res) => {
     const bill = await Bill.findById(req.params.billId);
-    if (!bill) return res.status(StatusCodes.BAD_REQUEST).json({ msg: 'Bill not found' });
+    if (!bill) return res.status(StatusCodes.NOT_FOUND).json({ msg: 'Bill not found' });
+    
+    // Check if user is authorized to view this bill (either payee or participant)
+    const isAuthorized = bill.paymentUserId.toString() === req.user.userId || 
+                          bill.participants.some(p => p.toString() === req.user.userId);
+                          
+    if (!isAuthorized) {
+        return res.status(StatusCodes.FORBIDDEN).json({ msg: 'Not authorized to view this bill' });
+    }
+    
     return res.status(StatusCodes.OK).json(bill);
 }
 
 postBill = async (req, res) => {
-    const { paymentUserId, restaurantName, totalAmount, items, participants } = req.body;
+    const { restaurantName, totalAmount, items, participants } = req.body;
+    
+    // Use authenticated user's ID as paymentUserId
+    const paymentUserId = req.user.userId;
 
     const billItems = items.map((item) => (
         {
@@ -20,6 +32,7 @@ postBill = async (req, res) => {
             claimedBy: item.claimedBy ? item.claimedBy.map(id => id) : []
         }
     ));
+    
     const bill = {
         paymentUserId,
         restaurantName,
@@ -27,7 +40,8 @@ postBill = async (req, res) => {
         items: billItems,
         participants
     }
-    const savedBill = await Bill.insertOne(bill);
+    
+    const savedBill = await Bill.create(bill);
     return res.status(StatusCodes.CREATED).json(savedBill);
 }
 

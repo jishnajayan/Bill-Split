@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
-const SALT_LENGTH = 10;
+// SALT_LENGTH moved to controller
 
 const UserSchema = mongoose.Schema({
     name: {
@@ -26,20 +26,38 @@ const UserSchema = mongoose.Schema({
         minLength: 10
     },
     friends: [{ friendUserId: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }, friendUsername: String }],
+    refreshTokens: [String]
 });
 
-UserSchema.pre('save', async function () {
-    this.password = await bcrypt.hash(this.password, SALT_LENGTH)
-});
+// Password hashing moved to controller
 
-UserSchema.methods.createJWT = function () {
+UserSchema.methods.createAccessToken = function () {
     return jwt.sign(
         { userId: this._id, email: this.email },
-        process.env.JWT_SECRET,
+        process.env.JWT_ACCESS_SECRET,
         {
-            expiresIn: process.env.JWT_LIFETIME,
+            expiresIn: process.env.JWT_ACCESS_LIFETIME || '15m',
         }
     )
+};
+
+UserSchema.methods.createRefreshToken = function () {
+    const refreshToken = jwt.sign(
+        { userId: this._id },
+        process.env.JWT_REFRESH_SECRET,
+        {
+            expiresIn: process.env.JWT_REFRESH_LIFETIME || '7d',
+        }
+    );
+    
+    // Store refresh token with user
+    this.refreshTokens.push(refreshToken);
+    return refreshToken;
+};
+
+// For backward compatibility
+UserSchema.methods.createJWT = function() {
+    return this.createAccessToken();
 };
 
 UserSchema.methods.comparePassword = async function (providedPassword) {
