@@ -1,0 +1,23 @@
+{
+  "name": "bill-split-root",
+  "version": "1.0.0",
+  "description": "Bill split application with React frontend and Express backend",
+  "main": "index.js",
+  "scripts": {
+    "start": "node server/app.js",
+    "dev:server": "cd server && npm start",
+    "dev:client": "cd client && npm start",
+    "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
+    "install:all": "npm install && cd server && npm install && cd ../client && npm install"
+  },
+  "keywords": [
+    "bill",
+    "split",
+    "mern"
+  ],
+  "author": "Jishna Thadichi",
+  "license": "ISC",
+  "dependencies": {
+    "concurrently": "^8.2.2"
+  }
+}

@@ -5,69 +5,104 @@ const bcrypt = require('bcryptjs')
 const SALT_LENGTH = 10
 
 const register = async (req, res) => {
-    // Hash the password before creating the user
-    const userData = { ...req.body };
-    userData.password = await bcrypt.hash(userData.password, SALT_LENGTH);
-    
-    const user = await User.create(userData);
-    
-    // Generate tokens
-    const accessToken = user.createAccessToken();
-    const refreshToken = user.createRefreshToken();
-    
-    // Save user with refresh token
-    await user.save();
-    
-    // Set refresh token in HTTP-only cookie
-    res.cookie('refreshToken', refreshToken, {
-        httpOnly: true,
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict'
-    });
-    
-    res.status(StatusCodes.CREATED).json({
-        user: {
-            id: user._id,
-            name: user.name,
-            email: user.email,
-        },
-        accessToken
-    });
+    try {
+        console.log('Register request received:', {
+            body: req.body,
+            headers: req.headers
+        });
+        
+        // Hash the password before creating the user
+        const userData = { ...req.body };
+        userData.password = await bcrypt.hash(userData.password, SALT_LENGTH);
+        
+        const user = await User.create(userData);
+        console.log('User created successfully:', user._id);
+        
+        // Generate tokens
+        const accessToken = user.createAccessToken();
+        const refreshToken = user.createRefreshToken();
+        
+        // Save user with refresh token
+        await user.save();
+        
+        // Set refresh token in HTTP-only cookie
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict'
+        });
+        
+        console.log('Sending successful registration response');
+        
+        res.status(StatusCodes.CREATED).json({
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+            },
+            accessToken
+        });
+    } catch (error) {
+        console.error('Registration error:', error);
+        // Let the global error handler deal with the error
+        throw error;
+    }
 }
 
 const login = async (req, res) => {
-    const { email, password } = req.body;
+    try {
+        console.log('Login request received:', {
+            body: req.body,
+            headers: req.headers
+        });
+        
+        const { email, password } = req.body;
 
-    const user = await User.findOne({ email });
-    if (!user) return res.status(StatusCodes.UNAUTHORIZED).json({ msg: 'Invalid credentials' });
+        const user = await User.findOne({ email });
+        if (!user) {
+            console.log(`Login failed: No user found with email ${email}`);
+            return res.status(StatusCodes.UNAUTHORIZED).json({ msg: 'Invalid credentials' });
+        }
 
-    const isPasswordCorrect = await user.comparePassword(password);
-    if (!isPasswordCorrect) return res.status(StatusCodes.UNAUTHORIZED).json({ msg: 'Invalid credentials' });
+        const isPasswordCorrect = await user.comparePassword(password);
+        if (!isPasswordCorrect) {
+            console.log(`Login failed: Incorrect password for user ${email}`);
+            return res.status(StatusCodes.UNAUTHORIZED).json({ msg: 'Invalid credentials' });
+        }
 
-    // Generate tokens
-    const accessToken = user.createAccessToken();
-    const refreshToken = user.createRefreshToken();
-    
-    // Save user with refresh token
-    await user.save();
-    
-    // Set refresh token in HTTP-only cookie
-    res.cookie('refreshToken', refreshToken, {
-        httpOnly: true,
-        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'strict'
-    });
+        console.log(`Login successful for user ${email}`);
+        
+        // Generate tokens
+        const accessToken = user.createAccessToken();
+        const refreshToken = user.createRefreshToken();
+        
+        // Save user with refresh token
+        await user.save();
+        
+        // Set refresh token in HTTP-only cookie
+        res.cookie('refreshToken', refreshToken, {
+            httpOnly: true,
+            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict'
+        });
 
-    res.status(StatusCodes.OK).json({
-        user: {
-            id: user._id,
-            name: user.name,
-            email: user.email,
-        },
-        accessToken
-    });
+        console.log('Sending successful login response');
+        
+        res.status(StatusCodes.OK).json({
+            user: {
+                id: user._id,
+                name: user.name,
+                email: user.email,
+            },
+            accessToken
+        });
+    } catch (error) {
+        console.error('Login error:', error);
+        // Let the global error handler deal with the error
+        throw error;
+    }
 }
 
 const refresh = async (req, res) => {

@@ -1,8 +1,11 @@
 const express = require('express')
 const router = express.Router()
 
-const { getUser, getUsersFriends, postUsersFriends, deleteUsersFriends, getIncomingBills, getOutgoingBills } = require('../controllers/user');
+const { getUser, searchUsers, getUsersFriends, postUsersFriends, deleteUsersFriends, getIncomingBills, getOutgoingBills } = require('../controllers/user');
 const { authenticateUser, authorizeUser } = require('../middleware/auth');
+
+// Search users endpoint
+router.route('/search').get(authenticateUser, searchUsers);
 
 // Apply authentication and authorization to all user routes
 router.route('/:userId').get(authenticateUser, authorizeUser, getUser);
